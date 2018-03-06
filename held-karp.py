@@ -18,21 +18,30 @@ def held_karp(distance_matrix):
 
     def f(i, visited):
         '''
-        Let f(i, unvisited) be the path of minimum distance from node i to node 0,
-        that passes through all remaining unvisited cities in `visited`, where
-        visited is a bitmask such that the bit in the jth position being 1 represents
-        city j having been visited, and bit j being 0 represents city j having not
-        been visited.
-        Then the solution we want is f(0, 0), and the following recursive relation holds:
-        f(i, visited) = min_{j in unvisited} ( d(i,j) + f(j, visited | (1<<j)) )
+        Let f(i, unvisited) be the path of minimum distance from node i to
+        node 0, that passes through all remaining unvisited cities in
+        `visited`, where visited is a bitmask such that the bit in the jth
+        position being 1 represents city j having been visited, and bit j
+        being 0 represents city j having not been visited.
+
+        Then the solution we want is f(0, 0), and the following recursive
+        relation holds:
+
+            f(i, visited) = min_{j in unvisited} ( d(i,j) + f(j, visited | (1<<j)) )
         '''
-        # copy the path
+        # Base case: check if all cities have been visited
         if visited == (1 << n) - 1:
             # we have visited all cities, return to 0
             return d[i][0]
+
+        min_dist = sys.maxint
         # visit all unvisited cities
-        unvisited = filter(lambda j: not (1 << j) & visited, range(n))
-        return min(d[i][j] + f(j, visited | (1 << j)) for j in unvisited)
+        for j in range(n):
+            if not (1 << j) & visited:
+                current_dist = d[i][j] + f(j, visited | (1 << j))
+                min_dist = min(min_dist, current_dist)
+
+        return min_dist
 
     return f(0, 0)
 
