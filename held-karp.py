@@ -16,34 +16,42 @@ def held_karp(distance_matrix):
     d = distance_matrix
     n = len(d)
 
-    def f(i, visited):
+    def f(i, visited, path_so_far):
         '''
-        Let f(i, unvisited) be the path of minimum distance from node i to
-        node 0, that passes through all remaining unvisited cities in
+        Let f(i, unvisited, path_so_far) be the path of minimum distance from city i to
+        city 0, that passes through all remaining unvisited cities in
         `visited`, where visited is a bitmask such that the bit in the jth
         position being 1 represents city j having been visited, and bit j
-        being 0 represents city j having not been visited.
+        being 0 represents city j having not been visited, and `path_so_far` is
+        the current path of minimum distance from city 0 up to city i.
 
-        Then the solution we want is f(0, 0), and the following recursive
+        Then the solution we want is f(0, 0, []), and the following recursive
         relation holds:
 
             f(i, visited) = min_{j in unvisited} ( d(i,j) + f(j, visited | (1<<j)) )
+
+        NOTE: Must be careful not to mutate
         '''
         # Base case: check if all cities have been visited
         if visited == (1 << n) - 1:
             # we have visited all cities, return to 0
-            return d[i][0]
+            return d[i][0], path_so_far + [0,]
 
         min_dist = sys.maxint
         # visit all unvisited cities
         for j in range(n):
             if not (1 << j) & visited:
-                current_dist = d[i][j] + f(j, visited | (1 << j))
-                min_dist = min(min_dist, current_dist)
+                dist_from_j, path_with_j = \
+                    f(j, visited | (1 << j), path_so_far + [j,])
+                # Distance with j
+                dist_with_j = d[i][j] + dist_from_j
+                if dist_with_j < min_dist:
+                    min_dist = dist_with_j
+                    min_path = path_with_j
 
-        return min_dist
+        return min_dist, min_path
 
-    return f(0, 0)
+    return f(0, 0, [])
 
 
 class Vertex:
