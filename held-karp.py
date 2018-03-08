@@ -116,18 +116,28 @@ def distance(v1, v2):
     return ((v1.x - v2.x)**2 + (v1.y - v2.y)**2)**0.5
 
 
-def main():
-    vs = [Vertex(0, 0),
-          Vertex(4, 4),
-          Vertex(4, 0),
-          Vertex(0, 4)]
-    d = [[None for v in vs] for v in vs]
+def adj_matrix(graph):
+    d = [[None for v in graph] for v in graph]
     for i in range(len(d)):
         for j in range(len(d[i])):
-            d[i][j] = distance(vs[i], vs[j])
+            d[i][j] = distance(graph[i], graph[j])
+    return d
 
 
-    print held_karp(d)
+def main():
+    # g1: (16.0, [0, 2, 1, 3, 0])
+    # g2: (15.773387165490545, [0, 3, 1, 2, 4, 0])
+    g1 = [Vertex(0, 0), Vertex(4, 4), Vertex(4, 0), Vertex(0, 4)]
+    g2 = [Vertex(0, 0), Vertex(4, 4), Vertex(0, 3), Vertex(4, 0), Vertex(1, 2)]
+
+    sol1= held_karp(adj_matrix(g1))
+    sol2= held_karp(adj_matrix(g2))
+
+    print sol1
+    print sol2
+
+    assert(sol1[0]==16.0)
+    assert(abs(sol2[0]-15.7733871)<0.001)
 
 
 
