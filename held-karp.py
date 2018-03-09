@@ -75,6 +75,7 @@ def held_karp_dp(distance_matrix):
     hamiltonian cycle of minimum distance. 
     '''
     dp = [[None for i in xrange(2**n)] for j in xrange(n)]
+    parent = [[None for i in xrange(2**n)] for j in xrange(n)]
 
     def f(i, visited):
         '''
@@ -95,17 +96,25 @@ def held_karp_dp(distance_matrix):
         if visited == (1 << n) - 1:
             # we have visited all cities, return to 0
             dp[i][visited] = d[i][0]
+            parent[0][visited] = i
             return d[i][0]
 
         min_dist = sys.maxint
+        parent_j = None
         # visit all unvisited cities
         for j in xrange(n):
             if not (1 << j) & visited:
-                min_dist = min(d[i][j] + f(j, visited | (1 << j)), min_dist)
+                dist_with_j = d[i][j] + f(j, (1 << j) | visited)
+                if dist_with_j < min_dist:
+                    min_dist = dist_with_j
+                    parent_j = i
 
         dp[i][visited] = min_dist
+        parent[j][visited] = parent_j
         return min_dist
 
+    ans = f(0,0)
+    import pdb; pdb.set_trace()
     return f(0, 0), "not implemented"
 
 
