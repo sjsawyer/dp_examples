@@ -68,17 +68,25 @@ def held_karp_dp(distance_matrix):
     to city 0 that passes through all unvisitied cities in the bit mask.
     There are n cities, and 2^n possible binary strings of length n, so our
     table will have dimensions n x 2^n
+
+    With this approach, we use another table called 'parent' that keeps track
+    of the parent city of i for each combination of (i, visited), and we can
+    use this table to backtrack through our solution to obtain the actual
+    hamiltonian cycle of minimum distance. 
     '''
     dp = [[None for i in xrange(2**n)] for j in xrange(n)]
 
-    def f(i, visited, path_so_far):
+    def f(i, visited):
         '''
         f is defined as in the purely recursive implementation above.
         The only difference here is that we check if the value we are
-        looking for is already in the defined dp table.
+        looking for is already in the defined dp table, and we do not
+        keep track of the path as we go along, as looking up a solution
+        for any given value would require having stored the path for
+        that solution as well, which would be expensive.
 
-        To retrive the path, we also need to keep track of the parent node
-        for any given i and remaining unvisited cities in the mask.
+        As such, we use the `parent` table to keep track of where we
+        came from.
         '''
         # Check the table
         if dp[i][visited]:
@@ -86,24 +94,32 @@ def held_karp_dp(distance_matrix):
         # Base case: check if all cities have been visited
         if visited == (1 << n) - 1:
             # we have visited all cities, return to 0
-            return d[i][0], path_so_far + [0,]
+            dp[i][visited] = d[i][0]
+            return d[i][0]
 
         min_dist = sys.maxint
         # visit all unvisited cities
-        for j in range(n):
+        for j in xrange(n):
             if not (1 << j) & visited:
-                dist_from_j, path_with_j = \
-                    f(j, visited | (1 << j), path_so_far + [j,])
-                # Distance with j
-                dist_with_j = d[i][j] + dist_from_j
-                if dist_with_j < min_dist:
-                    min_dist = dist_with_j
-                    min_path = path_with_j
+                min_dist = min(d[i][j] + f(j, visited | (1 << j)), min_dist)
 
-        return min_dist, min_path
+        dp[i][visited] = min_dist
+        return min_dist
 
-    return f(0, 0, [])
+    return f(0, 0), "not implemented"
 
+
+def held_karp_dp_bottomup(distance_matrix):
+    '''
+    In the bottom up implementation, we compute all possible solutions for the
+    values `i` and `visited` as in the implementations above, and then
+    simply look up the value for f(0,0).
+    With this approach, we use another table called 'parent' that keeps track
+    of the parent city of i for each combination of (i, visited), and we can
+    use this table to backtrack through our solution to obtain the actual
+    hamiltonian cycle of minimum distance. 
+    '''
+    pass
 
 
 class Vertex:
@@ -131,8 +147,10 @@ def main():
     g1 = [Vertex(0, 0), Vertex(4, 4), Vertex(4, 0), Vertex(0, 4)]
     g2 = [Vertex(0, 0), Vertex(4, 4), Vertex(0, 3), Vertex(4, 0), Vertex(1, 2)]
 
-    sol1= held_karp(adj_matrix(g1))
-    sol2= held_karp(adj_matrix(g2))
+    #sol1= held_karp(adj_matrix(g1))
+    #sol2= held_karp(adj_matrix(g2))
+    sol1 = held_karp_dp(adj_matrix(g1))
+    sol2 = held_karp_dp(adj_matrix(g2))
 
     print sol1
     print sol2
