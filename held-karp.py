@@ -1,6 +1,7 @@
 '''
 held-karp.py
-Implementation of the Bellman-Held-Karp Algorithm to exactly solve TSPs.
+Implementation of the Bellman-Held-Karp Algorithm to exactly solve TSPs,
+requiring no external dependencies.
 '''
 import sys
 
@@ -18,7 +19,7 @@ def held_karp(distance_matrix):
 
     def f(i, visited, path_so_far):
         '''
-        Let f(i, unvisited, path_so_far) be the path of minimum distance from city i to
+        Let f(i, visited, path_so_far) be the path of minimum distance from city i to
         city 0, that passes through all remaining unvisited cities in
         `visited`, where visited is a bitmask such that the bit in the jth
         position being 1 represents city j having been visited, and bit j
@@ -39,7 +40,7 @@ def held_karp(distance_matrix):
 
         min_dist = sys.maxint
         # visit all unvisited cities
-        for j in range(n):
+        for j in xrange(n):
             if not (1 << j) & visited:
                 dist_from_j, path_with_j = \
                     f(j, visited | (1 << j), path_so_far + [j,])
@@ -118,8 +119,8 @@ def distance(v1, v2):
 
 def adj_matrix(graph):
     d = [[None for v in graph] for v in graph]
-    for i in range(len(d)):
-        for j in range(len(d[i])):
+    for i in xrange(len(d)):
+        for j in xrange(len(d[i])):
             d[i][j] = distance(graph[i], graph[j])
     return d
 
