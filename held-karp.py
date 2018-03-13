@@ -69,13 +69,13 @@ def held_karp_dp(distance_matrix):
     There are n cities, and 2^n possible binary strings of length n, so our
     table will have dimensions n x 2^n
 
-    With this approach, we use another table called 'parent' that keeps track
-    of the parent city of i for each combination of (i, visited), and we can
+    With this approach, we use another table called 'child' that keeps track
+    of the child city of i for each combination of (i, visited), and we can
     use this table to backtrack through our solution to obtain the actual
-    hamiltonian cycle of minimum distance. 
+    hamiltonian cycle of minimum distance.
     '''
     dp = [[None for i in xrange(2**n)] for j in xrange(n)]
-    parent = [[None for i in xrange(2**n)] for j in xrange(n)]
+    child = [[None for i in xrange(2**n)] for j in xrange(n)]
 
     def f(i, visited):
         '''
@@ -86,7 +86,7 @@ def held_karp_dp(distance_matrix):
         for any given value would require having stored the path for
         that solution as well, which would be expensive.
 
-        As such, we use the `parent` table to keep track of where we
+        As such, we use the `child` table to keep track of where we
         came from.
         '''
         # Check the table
@@ -96,26 +96,53 @@ def held_karp_dp(distance_matrix):
         if visited == (1 << n) - 1:
             # we have visited all cities, return to 0
             dp[i][visited] = d[i][0]
-            parent[0][visited] = i
+            child[i][visited] = 0
             return d[i][0]
 
         min_dist = sys.maxint
-        parent_j = None
+        chosen_j = None
         # visit all unvisited cities
         for j in xrange(n):
             if not (1 << j) & visited:
                 dist_with_j = d[i][j] + f(j, (1 << j) | visited)
                 if dist_with_j < min_dist:
                     min_dist = dist_with_j
-                    parent_j = i
+                    chosen_j = j
 
         dp[i][visited] = min_dist
-        parent[j][visited] = parent_j
+        child[i][visited] = chosen_j
         return min_dist
 
-    ans = f(0,0)
-    import pdb; pdb.set_trace()
-    return f(0, 0), "not implemented"
+    # The value we are interested in
+    ans = f(0,1)
+
+    # Can optain the optimal path using the parent matrix
+    path = [0]
+    i, visited = 0, 1
+    next_ = child[i][visited]
+    while next_ is not None:
+        path.append(next_)
+        visited |= (1 << next_)
+        next_ = child[next_][visited]
+
+    # Can also optain the optimal path working backwards using
+    # the table and the knowledge of the cost of the optimal path
+    path = [0]
+    i, visited = 0, 1
+    cost_from_i = dp[i][visited]
+    while visited != (1 << n)-1:
+        for j in range(n):
+            if not visited & (1 << j):
+                cost_from_j = dp[j][visited | (1 << j)]
+                if cost_from_i - cost_from_j == d[i][j]:
+                    # j was the city selected in the opt solution
+                    path.append(j)
+                    i, visited = j, visited | (1 << j)
+                    cost_from_i = cost_from_j 
+                    break
+    path.append(0)
+
+    return ans, path
 
 
 def held_karp_dp_bottomup(distance_matrix):
@@ -123,10 +150,10 @@ def held_karp_dp_bottomup(distance_matrix):
     In the bottom up implementation, we compute all possible solutions for the
     values `i` and `visited` as in the implementations above, and then
     simply look up the value for f(0,0).
-    With this approach, we use another table called 'parent' that keeps track
-    of the parent city of i for each combination of (i, visited), and we can
+    With this approach, we use another table called 'child' that keeps track
+    of the child city of i for each combination of (i, visited), and we can
     use this table to backtrack through our solution to obtain the actual
-    hamiltonian cycle of minimum distance. 
+    hamiltonian cycle of minimum distance.
     '''
     pass
 
@@ -153,18 +180,17 @@ def adj_matrix(graph):
 def main():
     # g1: (16.0, [0, 2, 1, 3, 0])
     # g2: (15.773387165490545, [0, 3, 1, 2, 4, 0])
-    g1 = [Vertex(0, 0), Vertex(4, 4), Vertex(4, 0), Vertex(0, 4)]
+    #g1 = [Vertex(0, 0), Vertex(4, 4), Vertex(4, 0), Vertex(0, 4)]
     g2 = [Vertex(0, 0), Vertex(4, 4), Vertex(0, 3), Vertex(4, 0), Vertex(1, 2)]
-
     #sol1= held_karp(adj_matrix(g1))
     #sol2= held_karp(adj_matrix(g2))
-    sol1 = held_karp_dp(adj_matrix(g1))
+    #sol1 = held_karp_dp(adj_matrix(g1))
     sol2 = held_karp_dp(adj_matrix(g2))
 
-    print sol1
+    #print sol1
     print sol2
 
-    assert(sol1[0]==16.0)
+    #assert(sol1[0]==16.0)
     assert(abs(sol2[0]-15.7733871)<0.001)
 
 
