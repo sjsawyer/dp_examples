@@ -134,7 +134,8 @@ def held_karp_dp(distance_matrix):
         for j in range(n):
             if not visited & (1 << j):
                 cost_from_j = dp[j][visited | (1 << j)]
-                if cost_from_i - cost_from_j == d[i][j]:
+                # require a tolerance for real valued distances
+                if abs((cost_from_i - cost_from_j) - d[i][j]) < 0.001:
                     # j was the city selected in the opt solution
                     path.append(j)
                     i, visited = j, visited | (1 << j)
