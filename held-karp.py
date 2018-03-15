@@ -156,7 +156,32 @@ def held_karp_dp_bottomup(distance_matrix):
     use this table to backtrack through our solution to obtain the actual
     hamiltonian cycle of minimum distance.
     '''
-    pass
+    d = distance_matrix
+    n = len(d)
+
+    dp = [[None for i in xrange(2**n)] for j in xrange(n)]
+
+    # Base case:
+    # Distance from any city i back to 0 after having visited all cities
+    for i in range(n):
+        dp[i][(1<<n)-1] = d[i][0]
+
+    # Fill in all values of the dp table, excluding the values from the
+    # base case we've already inserted
+    # Note we started with having visited all cities except for 0
+    # and work backwards from there
+    for visited in reversed(xrange((1<<n)-1)):
+        for i in xrange(n):
+            min_dist = sys.maxint
+            for j in xrange(n):
+                if not (1 << j) & visited:
+                    dist_j = d[i][j] + dp[j][visited | (1 << j)]
+                    if dist_j < min_dist:
+                        min_dist = dist_j
+            dp[i][visited] = min_dist
+
+    ans = dp[0][1]
+    return ans, "not implemented"
 
 
 class Vertex:
@@ -186,7 +211,8 @@ def main():
     #sol1= held_karp(adj_matrix(g1))
     #sol2= held_karp(adj_matrix(g2))
     #sol1 = held_karp_dp(adj_matrix(g1))
-    sol2 = held_karp_dp(adj_matrix(g2))
+    #sol2 = held_karp_dp(adj_matrix(g2))
+    sol2 = held_karp_dp_bottomup(adj_matrix(g2))
 
     #print sol1
     print sol2
