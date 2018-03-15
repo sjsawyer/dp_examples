@@ -125,24 +125,6 @@ def held_karp_dp(distance_matrix):
         visited |= (1 << next_)
         next_ = child[next_][visited]
 
-    # Can also optain the optimal path working backwards using
-    # the table and the knowledge of the cost of the optimal path
-    path = [0]
-    i, visited = 0, 1
-    cost_from_i = dp[i][visited]
-    while visited != (1 << n)-1:
-        for j in range(n):
-            if not visited & (1 << j):
-                cost_from_j = dp[j][visited | (1 << j)]
-                # require a tolerance for real valued distances
-                if abs((cost_from_i - cost_from_j) - d[i][j]) < 0.001:
-                    # j was the city selected in the opt solution
-                    path.append(j)
-                    i, visited = j, visited | (1 << j)
-                    cost_from_i = cost_from_j 
-                    break
-    path.append(0)
-
     return ans, path
 
 
@@ -181,7 +163,27 @@ def held_karp_dp_bottomup(distance_matrix):
             dp[i][visited] = min_dist
 
     ans = dp[0][1]
-    return ans, "not implemented"
+
+    # We can also optain the optimal path working backwards using
+    # the table and the knowledge of the cost of the optimal path
+    path = [0]
+    i, visited = 0, 1
+    cost_from_i = dp[i][visited]
+    while visited != (1 << n)-1:
+        for j in range(n):
+            if not visited & (1 << j):
+                cost_from_j = dp[j][visited | (1 << j)]
+                # require a tolerance for real valued distances
+                if abs((cost_from_i - cost_from_j) - d[i][j]) < 0.001:
+                    # j was the city selected in the opt solution
+                    path.append(j)
+                    i, visited = j, visited | (1 << j)
+                    cost_from_i = cost_from_j 
+                    break
+    # We have visited all cities, so return to 0
+    path.append(0)
+
+    return ans, path
 
 
 class Vertex:
